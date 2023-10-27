@@ -1,0 +1,33 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.text-truncate2 {
+    -webkit-line-clamp: 3;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.card {
+  transition: transform 0.2s ease-in-out;
+
+}
+.card:hover {
+  -webkit-backface-visibility: hidden;
+  -webkit-transform: translateZ(0) scale(1.01, 1.01);
+  }
