@@ -1,4 +1,5 @@
 ﻿using ErrorReports.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace ErrorReports.Controllers
         };
 
         // GET: ErrorReportController
+        [Authorize]
         public ActionResult Index()
         {
             return View(errorReports);
