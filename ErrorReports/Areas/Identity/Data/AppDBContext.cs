@@ -1,4 +1,5 @@
 ﻿using ErrorReports.Areas.Identity.Data;
+using ErrorReports.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -29,4 +30,8 @@ public class AppDBContext : IdentityDbContext<AppUser>
             builder.Property(x => x.LastName).HasMaxLength(255); 
         } 
     }
+
+    public DbSet<ErrorReport> Incidents { get; set; }
 }
+
+
