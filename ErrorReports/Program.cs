@@ -4,6 +4,7 @@ using ErrorReports.Areas.Identity.Data;
 using ErrorReports.Models;
 using Microsoft.AspNetCore.Authorization;
 using ErrorReports.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("AppDBContextConnection") ?? throw new InvalidOperationException("Connection string 'AppDBContextConnection' not found.");
 
@@ -52,19 +53,19 @@ app.MapControllerRoute(
     pattern: "{controller=ErrorReport}/{action=Index}/{id?}");
 
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-//    var context = services.GetRequiredService<AppDBContext>();
-//    context.Database.Migrate();
-//    // requires using Microsoft.Extensions.Configuration;
-//    // Set password with the Secret Manager tool.
-//    // dotnet user-secrets set SeedUserPW <pw>
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<AppDBContext>();
+    context.Database.Migrate();
+    // requires using microsoft.extensions.configuration;
+    // set password with the secret manager tool.
+    // dotnet user-secrets set seeduserpw <pw>
 
-//    var testUserPw = builder.Configuration.GetValue<string>("SeedUserPW");
+    var testuserpw = builder.Configuration.GetValue<string>("seeduserpw");
 
-//    await SeedData.Initialize(services, testUserPw);
-//}
+    await SeedData.Initialize(services, testuserpw);
+}
 
 
 app.Run();

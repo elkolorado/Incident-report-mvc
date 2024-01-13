@@ -18,26 +18,28 @@ namespace ErrorReports.Authorization
                 // dotnet user-secrets set SeedUserPW <pw>
                 // The admin user can do anything
 
-                var adminID = await EnsureUser(serviceProvider, testUserPw, "admin@contoso.com");
+                var adminID = await EnsureUser(serviceProvider, testUserPw, "admin@contoso.com", "Admin Name", "Admin Surname");
                 await EnsureRole(serviceProvider, adminID, Constants.IncidentAdministratorsRole);
 
                 // allowed user can create and edit contacts that they create
-                var managerID = await EnsureUser(serviceProvider, testUserPw, "manager@contoso.com");
+                var managerID = await EnsureUser(serviceProvider, testUserPw, "manager@contoso.com", "Manager Name", "Manager Surname");
                 await EnsureRole(serviceProvider, managerID, Constants.IncidentManagersRole);
 
                 SeedDB(context, adminID);
             }
         }
         private static async Task<string> EnsureUser(IServiceProvider serviceProvider,
-                                            string testUserPw, string UserName)
+                                            string testUserPw, string UserName, string FirstName, string LastName)
         {
-            var userManager = serviceProvider.GetService<UserManager<IdentityUser>>();
+            var userManager = serviceProvider.GetService<UserManager<AppUser>>();
 
             var user = await userManager.FindByNameAsync(UserName);
             if (user == null)
             {
-                user = new IdentityUser
+                user = new AppUser
                 {
+                    FirstName = FirstName,
+                    LastName = LastName,
                     UserName = UserName,
                     EmailConfirmed = true
                 };
@@ -68,7 +70,7 @@ namespace ErrorReports.Authorization
                 IR = await roleManager.CreateAsync(new IdentityRole(role));
             }
 
-            var userManager = serviceProvider.GetService<UserManager<IdentityUser>>();
+            var userManager = serviceProvider.GetService<UserManager<AppUser>>();
 
             //if (userManager == null)
             //{

@@ -16,7 +16,7 @@ namespace ErrorReports.Controllers
         private readonly AppDBContext _contex;
         private static IList<ErrorReport> errorReports;
         private readonly IAuthorizationService _authorizationService;
-        private UserManager<AppUser> UserManager { get; }
+        private UserManager<AppUser> UserManager { get; set; }
 
         public ErrorReportController(AppDBContext contex, IAuthorizationService authorizationService, UserManager<AppUser> userManager)
         {
@@ -42,15 +42,13 @@ namespace ErrorReports.Controllers
             return View(GetErrorReport(id));
         }
 
-        [BindProperty]
-        public ErrorReport ErrorReport { get; set; }
 
         // GET: ErrorReportController/Create
         [Authorize]
-        public async Task<ActionResult> CreateAsync()
+        public async Task<ActionResult> Create()
         {
             var isAuthorized = await _authorizationService.AuthorizeAsync(
-                                                        User, ErrorReport,
+                                                        User, new ErrorReport(),
                                                         IncidentOperations.Create);
 
             if (!isAuthorized.Succeeded)
@@ -63,7 +61,7 @@ namespace ErrorReports.Controllers
         // POST: ErrorReportController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> CreateAsync(ErrorReport report)
+        public async Task<ActionResult> Create(ErrorReport report)
         {
             report.DateReported = DateTime.Now;
             report.Status = ErrorStatus.Open;
@@ -86,7 +84,7 @@ namespace ErrorReports.Controllers
 
         // GET: ErrorReportController/Edit/5
         [Authorize]
-        public async Task<ActionResult> EditAsync(int id)
+        public async Task<ActionResult> Edit(int id)
         {
             var isAuthorized = await _authorizationService.AuthorizeAsync(
                 User, GetErrorReport(id),
@@ -102,7 +100,7 @@ namespace ErrorReports.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> EditAsync(int id, ErrorReport updatedReport)
+        public async Task<ActionResult> Edit(int id, ErrorReport updatedReport)
         {
             var existingReport = GetErrorReport(id);
             if (existingReport == null)
@@ -129,7 +127,7 @@ namespace ErrorReports.Controllers
 
         // GET: ErrorReportController/Delete/5
         [Authorize]
-        public async Task<ActionResult> DeleteAsync(int id)
+        public async Task<ActionResult> Delete(int id)
         {
             var isAuthorized = await _authorizationService.AuthorizeAsync(
                 User, GetErrorReport(id),
@@ -145,7 +143,7 @@ namespace ErrorReports.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteAsync(int id, ErrorReport report)
+        public async Task<ActionResult> Delete(int id, ErrorReport report)
         {
             var isAuthorized = await _authorizationService.AuthorizeAsync(
                 User, report,
