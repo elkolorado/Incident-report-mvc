@@ -5,6 +5,9 @@
 @inject IAuthorizationService AuthorizationService
 @{
     ViewData["Title"] = "Details";
+    var assigned = (bool)ViewData["Assigned"] ? "true" : "false";
+    var owner = (bool)ViewData["Owner"] ? "true" : "false";
+
 }
 
 <h1>Incident Details</h1>
@@ -16,62 +19,110 @@
 </nav>
 
 <hr />
-<div>
+<div class="row row-cols-md-2 row-cols-1">
 
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DateReported)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.DateReported)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ReporterName)
-        </dt>
-        <dd class="col-sm-10">
-            @ViewData["user"]
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class="col-sm-10">
-            @Model.Status.ToText()
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Priority)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Priority)
-        </dd>
-    </dl>
+    <div class="col">
+
+        <dl class="row w-100">
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.Title)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Title)
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.Description)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Description)
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.DateReported)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.DateReported)
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.ReporterName)
+            </dt>
+            <dd class="col-sm-9">
+                @ViewData["user"]
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.Status)
+            </dt>
+            <dd class="col-sm-9">
+                @Model.Status.ToText()
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.Priority)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Priority)
+            </dd>
+        </dl>
+
+
+        <div>
+            @if ((await AuthorizationService.AuthorizeAsync(
+            User, Model,
+            IncidentOperations.Update)).Succeeded || (owner == "true" || (User.IsInRole(Constants.IncidentHelpDeskRole) || User.IsInRole(Constants.IncidentManagersRole) || User.IsInRole(Constants.IncidentAdministratorsRole))))
+            {
+                <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-primary">Edit</a>
+
+            }
+
+            @if ((await AuthorizationService.AuthorizeAsync(
+            User, Model,
+            IncidentOperations.Delete)).Succeeded)
+            {
+                <a href="@Url.Action("Delete", new { id = Model.Id })" class="btn btn-danger">Delete</a>
+            }
+
+            @if ((await AuthorizationService.AuthorizeAsync(
+            User, Model,
+            IncidentOperations.Accept)).Succeeded && assigned == "false")
+            {
+                <form class="d-inline" method="POST" action="@Url.Action("Accept", new { id = Model.Id })">
+                    @Html.AntiForgeryToken() <!-- Include this line if you are using AntiForgeryToken for CSRF protection -->
+                    <button type="submit" class="btn btn-primary">Accept</button>
+                </form>
+            }
+
+
+        </div>
+
+    </div>
+    <div class="col">
+        <!-- Add comments display and input box -->
+        <h2>Comments</h2>
+        @if (Model.Comments.Count() != 0)
+        {
+            <div style="max-height: 300px; overflow-y: auto;">
+                @foreach (var comment in Model.Comments)
+                {
+                    <div>
+                        <p class="mb-0">
+                            <small>@comment.User</small>
+                            <small>@comment.CommentDate</small>
+                        </p>
+                        <p>@comment.Content</p>
+                    </div>
+                    <hr/>
+                }
+            </div>
+        }
+
+
+        <form method="POST" action="@Url.Action("AddComment", new { id = Model.Id })">
+            @Html.AntiForgeryToken() <!-- Include this line if you are using AntiForgeryToken for CSRF protection -->
+            <div class="form-group">
+                <label for="comment">New Comment:</label>
+                <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Comment</button>
+        </form>
+    </div>
 </div>
-<div>
-    @if ((await AuthorizationService.AuthorizeAsync(
-    User, Model,
-    IncidentOperations.Update)).Succeeded)
-    {
-        <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-primary">Edit</a>
-
-    }
-
-    @if ((await AuthorizationService.AuthorizeAsync(
-    User, Model,
-    IncidentOperations.Delete)).Succeeded)
-    {
-        <a href="@Url.Action("Delete", new { id = Model.Id })" class="btn btn-danger">Delete</a>
-    }
 
 
-</div>

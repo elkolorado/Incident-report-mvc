@@ -21,8 +21,12 @@ namespace ErrorReports.Authorization
             }
 
             // If not asking for approval/reject, return.
-            if (requirement.Name != Constants.ApproveOperationName &&
-                requirement.Name != Constants.RejectOperationName)
+            if (requirement.Name != Constants.AssignOperationName && 
+                requirement.Name != Constants.AcceptOperationName &&
+                requirement.Name != Constants.CommentOperationName &&
+                requirement.Name != Constants.UpdateOperationName && 
+                requirement.Name != Constants.DeleteOperationName &&
+                requirement.Name != Constants.ReadOperationName)
             {
                 return Task.CompletedTask;
             }

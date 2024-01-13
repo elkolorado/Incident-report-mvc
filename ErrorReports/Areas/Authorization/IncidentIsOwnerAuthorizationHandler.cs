@@ -34,7 +34,8 @@ namespace ErrorReports.Authorization
             if (requirement.Name != Constants.CreateOperationName &&
                 requirement.Name != Constants.ReadOperationName &&
                 requirement.Name != Constants.UpdateOperationName &&
-                requirement.Name != Constants.DeleteOperationName)
+                requirement.Name != Constants.DeleteOperationName &&
+                requirement.Name != Constants.CommentOperationName)
             {
                 return Task.CompletedTask;
             }

@@ -4,6 +4,25 @@
 @inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager
 
+
+<div>
+    <ul class="navbar-nav flex-grow-1">
+        <li class="nav-item">
+            <a class="nav-link" asp-area="" asp-controller="ErrorReport" asp-action="Index">Home</a>
+        </li>
+        @if(User.IsInRole(Constants.IncidentHelpDeskRole) || User.IsInRole(Constants.IncidentManagersRole) || User.IsInRole(Constants.IncidentAdministratorsRole))
+        {
+            <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-controller="ErrorReport" asp-action="Assigned">Assigned To Me</a>
+            </li>
+        }
+        <li class="nav-item">
+            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </li>
+    </ul>
+</div>
+<div>
+
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {
@@ -26,3 +45,4 @@ else
     </li>
 }
 </ul>
+</div>

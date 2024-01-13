@@ -25,6 +25,13 @@ namespace ErrorReports.Authorization
                 var managerID = await EnsureUser(serviceProvider, testUserPw, "manager@contoso.com", "Manager Name", "Manager Surname");
                 await EnsureRole(serviceProvider, managerID, Constants.IncidentManagersRole);
 
+                var helpDeskID = await EnsureUser(serviceProvider, testUserPw, "helpdesk@contoso.com", "HelpDesk Name", "HelpDesk Surname");
+                await EnsureRole(serviceProvider, helpDeskID, Constants.IncidentHelpDeskRole);
+
+                var helpDesk2ID = await EnsureUser(serviceProvider, testUserPw, "helpdesk2@contoso.com", "HelpDesk2 Name", "HelpDesk2 Surname");
+                await EnsureRole(serviceProvider, helpDesk2ID, Constants.IncidentHelpDeskRole);
+
+
                 SeedDB(context, adminID);
             }
         }
@@ -41,6 +48,7 @@ namespace ErrorReports.Authorization
                     FirstName = FirstName,
                     LastName = LastName,
                     Email = UserName,
+                    UserName = UserName,
                     EmailConfirmed = true
                 };
                 await userManager.CreateAsync(user, testUserPw);

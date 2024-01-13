@@ -1,5 +1,6 @@
 ﻿using ErrorReports.Areas.Identity.Data;
 using ErrorReports.Authorization;
+using ErrorReports.Migrations;
 using ErrorReports.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +16,8 @@ namespace ErrorReports.Controllers
     {
         private readonly AppDBContext _contex;
         private static IList<ErrorReport> errorReports;
+        private static IList<HelpDeskAssignment> assignedReports;
+
         private readonly IAuthorizationService _authorizationService;
         private UserManager<AppUser> UserManager { get; set; }
 
@@ -22,6 +25,7 @@ namespace ErrorReports.Controllers
         {
             _contex = contex;
             errorReports = contex.Incidents.ToList();
+            assignedReports = contex.HelpDeskAssignments.ToList();
             _authorizationService = authorizationService;
             UserManager = userManager;
 
@@ -29,21 +33,65 @@ namespace ErrorReports.Controllers
 
         // GET: ErrorReportController
         [Authorize]
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            return View(errorReports);
+            var authorizedReports = new List<ErrorReport>();
+
+            foreach (var errorReport in errorReports)
+            {
+                var isAuthorized = await _authorizationService.AuthorizeAsync(
+                    User, GetErrorReport(errorReport.Id),
+                    IncidentOperations.Read);
+
+                if (isAuthorized.Succeeded)
+                {
+                    authorizedReports.Add(errorReport);
+                }
+            }
+            return View(authorizedReports);
         }
+
+        // GET: ErrorReportController/Assigned
+        [Authorize]
+        public async Task<ActionResult> Assigned()
+        {
+            var userId = UserManager.GetUserId(User);
+            IList<ErrorReport> assignedToUser = errorReports
+        .Where(report => assignedReports.Any(a => a.HelpDeskUserId == userId && a.ErrorReportId == report.Id))
+        .ToList();
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(
+                                                        User, new ErrorReport(),
+                                                        IncidentOperations.Assign);
+
+            if (!isAuthorized.Succeeded)
+            {
+                return RedirectToAction("Index");
+            }
+
+            return View(assignedToUser);
+            
+        }
+
+
+
 
         // GET: ErrorReportController/Details/5
         [Authorize]
         public async Task<ActionResult> Details(int id)
         {
             ErrorReport report = GetErrorReport(id);
+            report.Comments = _contex.ErrorComments.Where(a => a.ErrorReportId == report.Id).ToList();
             var user = await UserManager.FindByIdAsync(report.ReporterName);
-            if(user != null)
+            if (user != null)
             {
                 ViewData["user"] = user.Email;
+
             }
+            bool assigned = assignedReports.Any(a => a.ErrorReportId == id);
+            bool isOwnHelpDesk = assignedReports.Any(a => a.HelpDeskUserId == UserManager.GetUserId(User));
+            ViewData["assigned"] = assigned;
+            ViewData["owner"] = isOwnHelpDesk;
             return View(report);
         }
 
@@ -132,6 +180,44 @@ namespace ErrorReports.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Accept(int id)
+        {
+            var errorReport = GetErrorReport(id);
+            if (errorReport == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(
+                User, errorReport,
+                IncidentOperations.Accept);
+            if (!isAuthorized.Succeeded)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var helpDeskUser = await UserManager.GetUserAsync(User);
+            if (helpDeskUser == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var assignment = new HelpDeskAssignment
+            {
+                ErrorReportId = id,
+                HelpDeskUserId = helpDeskUser.Id,
+                AssignedDate = DateTime.Now
+            };
+
+            _contex.HelpDeskAssignments.Add(assignment);
+            _contex.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
+
         // GET: ErrorReportController/Delete/5
         [Authorize]
         public async Task<ActionResult> Delete(int id)
@@ -173,6 +259,39 @@ namespace ErrorReports.Controllers
         public ErrorReport GetErrorReport(int id)
         {
             return _contex.Incidents.Find(id);
+        }
+        // POST: ErrorReportController/AddComment/5
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> AddComment(int id, string comment)
+        {
+            var errorReport = GetErrorReport(id);
+            if (errorReport == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(
+                User, errorReport,
+                IncidentOperations.Comment);
+            if (!isAuthorized.Succeeded)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var errorComment = new ErrorComment
+            {
+                ErrorReportId = id,
+                Content = comment,
+                CommentDate = DateTime.Now,
+                UserId = UserManager.GetUserId(User)
+            };
+
+            _contex.ErrorComments.Add(errorComment);
+            _contex.SaveChanges();
+
+            return RedirectToAction("Details", new { id = id });
         }
     }
 }

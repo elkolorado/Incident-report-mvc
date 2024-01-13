@@ -21,13 +21,16 @@ namespace ErrorReports.Authorization
             }
 
             // If not asking for approval/reject, return.
-            if (requirement.Name != Constants.ApproveOperationName &&
-                requirement.Name != Constants.RejectOperationName)
+            if (requirement.Name != Constants.AcceptOperationName &&
+                requirement.Name != Constants.UpdateOperationName &&
+                requirement.Name != Constants.CommentOperationName &&
+                requirement.Name != Constants.AssignOperationName &&
+                requirement.Name != Constants.DeleteOperationName)
             {
                 return Task.CompletedTask;
             }
 
-            // Managers can approve or reject.
+            // Helpdesk can read/comment/accept tasks.
             if (context.User.IsInRole(Constants.IncidentHelpDeskRole))
             {
                 context.Succeed(requirement);

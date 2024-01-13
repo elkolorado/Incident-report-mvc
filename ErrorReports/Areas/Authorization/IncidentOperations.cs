@@ -12,10 +12,12 @@ namespace ErrorReports.Authorization
           new OperationAuthorizationRequirement { Name = Constants.UpdateOperationName };
         public static OperationAuthorizationRequirement Delete =
           new OperationAuthorizationRequirement { Name = Constants.DeleteOperationName };
-        public static OperationAuthorizationRequirement Approve =
-          new OperationAuthorizationRequirement { Name = Constants.ApproveOperationName };
-        public static OperationAuthorizationRequirement Reject =
-          new OperationAuthorizationRequirement { Name = Constants.RejectOperationName };
+        public static OperationAuthorizationRequirement Accept =
+          new OperationAuthorizationRequirement { Name = Constants.AcceptOperationName };
+        public static OperationAuthorizationRequirement Assign =
+          new OperationAuthorizationRequirement { Name = Constants.AssignOperationName };
+        public static OperationAuthorizationRequirement Comment =
+  new OperationAuthorizationRequirement { Name = Constants.CommentOperationName };
     }
 
     public class Constants
@@ -24,8 +26,11 @@ namespace ErrorReports.Authorization
         public static readonly string ReadOperationName = "Read";
         public static readonly string UpdateOperationName = "Update";
         public static readonly string DeleteOperationName = "Delete";
-        public static readonly string ApproveOperationName = "Approve";
-        public static readonly string RejectOperationName = "Reject";
+        public static readonly string AssignOperationName = "Assign";
+        public static readonly string AcceptOperationName = "Accept";
+        public static readonly string CommentOperationName = "Comment";
+
+
 
         public static readonly string IncidentAdministratorsRole =
                                                               "ContactAdministrators";

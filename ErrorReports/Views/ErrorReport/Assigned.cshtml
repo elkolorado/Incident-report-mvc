@@ -1,0 +1,43 @@
+﻿@model IEnumerable<ErrorReports.Models.ErrorReport>
+
+
+<h1 class="mt-5">Incidents Assigned To Me</h1>
+
+<div class="row row-cols-4 mt-5">
+    @if (Model.Count() == 0)
+    {
+        <p>There are no incidents assigned to you.</p>
+    }
+    @foreach (var item in Model)
+    {
+        
+        string priority = item.Priority.ToString() == "High" ? "danger" : item.Priority.ToString() == "Medium" ? "warning" :
+        "info";
+        <div class="col ">
+            <div class="card border-@priority h-100">
+                @Html.ActionLink("", "Details", new { id = item.Id }, new { @class = "stretched-link" })
+                <div class="card-header">
+                    <div class="d-flex justify-content-between">
+                        <span>ID @Html.DisplayFor(modelItem => item.Id)</span>
+                        <span class="badge text-bg-@priority">@Html.DisplayFor(modelItem => item.Priority)</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title text-truncate2 pe-3">@Html.DisplayFor(modelItem => item.Title)</h5>
+                    <div class="d-flex justify-content-between">
+                        <small>status</small>
+                        <small>@item.Status.ToText()</small>
+
+                    </div>
+                    <hr class="m-1" />
+                    <div class="d-flex justify-content-between">
+                        <small>created</small>
+                        <small>@Html.DisplayFor(modelItem => item.DateReported)</small>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
