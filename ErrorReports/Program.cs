@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ErrorReports.Areas.Identity.Data;
 using ErrorReports.Models;
+using Microsoft.AspNetCore.Authorization;
+using ErrorReports.Authorization;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("AppDBContextConnection") ?? throw new InvalidOperationException("Connection string 'AppDBContextConnection' not found.");
 
@@ -12,8 +14,20 @@ builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireCo
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDBContext>();
 
+
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Authorization handlers.
+builder.Services.AddScoped<IAuthorizationHandler,
+                      IncidentIsOwnerAuthorizationHandler>();
+
+builder.Services.AddSingleton<IAuthorizationHandler,
+                      IncidentIsAdminAuthorizationHandler>();
+
+builder.Services.AddSingleton<IAuthorizationHandler,
+                      IncidentIsManagerAuthorizationHandler>();
 
 var app = builder.Build();
 

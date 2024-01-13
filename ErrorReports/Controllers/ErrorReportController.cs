@@ -1,9 +1,12 @@
 ﻿using ErrorReports.Areas.Identity.Data;
+using ErrorReports.Authorization;
 using ErrorReports.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Versioning;
+using System.Composition;
 using System.Linq;
 
 namespace ErrorReports.Controllers
@@ -12,16 +15,16 @@ namespace ErrorReports.Controllers
     {
         private readonly AppDBContext _contex;
         private static IList<ErrorReport> errorReports;
-        //private static IList<ErrorReport> errorReports = new List<ErrorReport>
-        //{
-        //       new ErrorReport { Id = 1, Title = "Błąd w aplikacji", Description = "Aplikacja zawiesza się.", DateReported = DateTime.Now.AddHours(-3), ReporterName = "Jan Kowalski", Status = ErrorStatus.Open, Priority = ErrorPriority.High },
-        //       new ErrorReport { Id = 2, Title = "Problem z logowaniem", Description = "Nie można zalogować do systemu.", DateReported = DateTime.Now.AddHours(-31), ReporterName = "Anna Nowak", Status = ErrorStatus.InProgress, Priority = ErrorPriority.Medium },
+        private readonly IAuthorizationService _authorizationService;
+        private UserManager<AppUser> UserManager { get; }
 
-        //};
-
-        public ErrorReportController(AppDBContext contex) { 
+        public ErrorReportController(AppDBContext contex, IAuthorizationService authorizationService, UserManager<AppUser> userManager)
+        {
             _contex = contex;
             errorReports = contex.Incidents.ToList();
+            _authorizationService = authorizationService;
+            UserManager = userManager;
+
         }
 
         // GET: ErrorReportController
@@ -39,21 +42,42 @@ namespace ErrorReports.Controllers
             return View(GetErrorReport(id));
         }
 
+        [BindProperty]
+        public ErrorReport ErrorReport { get; set; }
+
         // GET: ErrorReportController/Create
         [Authorize]
-        public ActionResult Create()
+        public async Task<ActionResult> CreateAsync()
         {
+            var isAuthorized = await _authorizationService.AuthorizeAsync(
+                                                        User, ErrorReport,
+                                                        IncidentOperations.Create);
+
+            if (!isAuthorized.Succeeded)
+            {
+                return RedirectToAction("Index");
+            }
             return View();
         }
 
         // POST: ErrorReportController/Create
-        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(ErrorReport report)
+        public async Task<ActionResult> CreateAsync(ErrorReport report)
         {
             report.DateReported = DateTime.Now;
             report.Status = ErrorStatus.Open;
+            report.ReporterName = UserManager.GetUserId(User);
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(
+                User, report,
+                IncidentOperations.Create);
+
+            if (!isAuthorized.Succeeded)
+            {
+                return RedirectToAction("Index");
+            }
+
             _contex.Incidents.Add(report);
             _contex.SaveChanges();
 
@@ -62,8 +86,15 @@ namespace ErrorReports.Controllers
 
         // GET: ErrorReportController/Edit/5
         [Authorize]
-        public ActionResult Edit(int id)
+        public async Task<ActionResult> EditAsync(int id)
         {
+            var isAuthorized = await _authorizationService.AuthorizeAsync(
+                User, GetErrorReport(id),
+                IncidentOperations.Update);
+            if (!isAuthorized.Succeeded)
+            {
+                return RedirectToAction("Index");
+            }
             return View(GetErrorReport(id));
         }
 
@@ -71,13 +102,21 @@ namespace ErrorReports.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, ErrorReport updatedReport)
+        public async Task<ActionResult> EditAsync(int id, ErrorReport updatedReport)
         {
             var existingReport = GetErrorReport(id);
             if (existingReport == null)
             {
                 return RedirectToAction("Index");
             }
+            var isAuthorized = await _authorizationService.AuthorizeAsync(
+                User, existingReport,
+                IncidentOperations.Update);
+            if (!isAuthorized.Succeeded)
+            {
+                return RedirectToAction("Index");
+            }
+
             existingReport.Title = updatedReport.Title;
             existingReport.Description = updatedReport.Description;
             existingReport.Status = updatedReport.Status;
@@ -90,8 +129,15 @@ namespace ErrorReports.Controllers
 
         // GET: ErrorReportController/Delete/5
         [Authorize]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> DeleteAsync(int id)
         {
+            var isAuthorized = await _authorizationService.AuthorizeAsync(
+                User, GetErrorReport(id),
+                IncidentOperations.Delete);
+            if (!isAuthorized.Succeeded)
+            {
+                return RedirectToAction("Index");
+            }
             return View(GetErrorReport(id));
         }
 
@@ -99,14 +145,22 @@ namespace ErrorReports.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, ErrorReport report)
+        public async Task<ActionResult> DeleteAsync(int id, ErrorReport report)
         {
+            var isAuthorized = await _authorizationService.AuthorizeAsync(
+                User, report,
+                IncidentOperations.Update);
+            if (!isAuthorized.Succeeded)
+            {
+                return RedirectToAction("Index");
+            }
             _contex.Incidents.Remove(GetErrorReport(id));
             _contex.SaveChanges();
             return RedirectToAction("Index");
         }
 
-        public ErrorReport GetErrorReport(int id){
+        public ErrorReport GetErrorReport(int id)
+        {
             return _contex.Incidents.Find(id);
         }
     }
