@@ -32,6 +32,8 @@ public class AppDBContext : IdentityDbContext<AppUser>
     }
 
     public DbSet<ErrorReport> Incidents { get; set; }
+    public DbSet<HelpDeskAssignment> HelpDeskAssignments { get; set; }
+
 }
 
 

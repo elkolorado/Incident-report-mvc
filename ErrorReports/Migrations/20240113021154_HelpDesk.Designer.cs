@@ -4,6 +4,7 @@ using ErrorReports.Areas.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ErrorReports.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240113021154_HelpDesk")]
+    partial class HelpDesk
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,33 +160,6 @@ namespace ErrorReports.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Incidents");
-                });
-
-            modelBuilder.Entity("ErrorReports.Models.HelpDeskAssignment", b =>
-                {
-                    b.Property<int>("AssignmentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AssignmentId"), 1L, 1);
-
-                    b.Property<DateTime>("AssignedDate")
-                        .HasColumnType("Datetime");
-
-                    b.Property<int>("ErrorReportId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("HelpDeskUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("AssignmentId");
-
-                    b.HasIndex("ErrorReportId");
-
-                    b.HasIndex("HelpDeskUserId");
-
-                    b.ToTable("HelpDeskAssignments");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -341,25 +316,6 @@ namespace ErrorReports.Migrations
                     b.Navigation("ErrorReport");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("ErrorReports.Models.HelpDeskAssignment", b =>
-                {
-                    b.HasOne("ErrorReports.Models.ErrorReport", "ErrorReport")
-                        .WithMany()
-                        .HasForeignKey("ErrorReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ErrorReports.Areas.Identity.Data.AppUser", "HelpDeskUser")
-                        .WithMany()
-                        .HasForeignKey("HelpDeskUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ErrorReport");
-
-                    b.Navigation("HelpDeskUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

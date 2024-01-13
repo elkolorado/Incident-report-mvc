@@ -30,5 +30,6 @@ namespace ErrorReports.Authorization
         public static readonly string IncidentAdministratorsRole =
                                                               "ContactAdministrators";
         public static readonly string IncidentManagersRole = "ContactManagers";
+        public static readonly string IncidentHelpDeskRole = "ContactHelpDesk";
     }
 }

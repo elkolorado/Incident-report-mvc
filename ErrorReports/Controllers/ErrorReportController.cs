@@ -36,10 +36,15 @@ namespace ErrorReports.Controllers
 
         // GET: ErrorReportController/Details/5
         [Authorize]
-        public ActionResult Details(int id)
+        public async Task<ActionResult> Details(int id)
         {
-
-            return View(GetErrorReport(id));
+            ErrorReport report = GetErrorReport(id);
+            var user = await UserManager.FindByIdAsync(report.ReporterName);
+            if(user != null)
+            {
+                ViewData["user"] = user.Email;
+            }
+            return View(report);
         }
 
 
@@ -47,8 +52,10 @@ namespace ErrorReports.Controllers
         [Authorize]
         public async Task<ActionResult> Create()
         {
+            ErrorReport errorReport = new ErrorReport();
+            errorReport.ReporterName = UserManager.GetUserId(User);
             var isAuthorized = await _authorizationService.AuthorizeAsync(
-                                                        User, new ErrorReport(),
+                                                        User, errorReport,
                                                         IncidentOperations.Create);
 
             if (!isAuthorized.Succeeded)
@@ -136,6 +143,12 @@ namespace ErrorReports.Controllers
             {
                 return RedirectToAction("Index");
             }
+            var user = await UserManager.FindByIdAsync(GetErrorReport(id).ReporterName);
+
+            if (user != null)
+            {
+                ViewData["user"] = user.Email;
+            }
             return View(GetErrorReport(id));
         }
 
@@ -146,8 +159,8 @@ namespace ErrorReports.Controllers
         public async Task<ActionResult> Delete(int id, ErrorReport report)
         {
             var isAuthorized = await _authorizationService.AuthorizeAsync(
-                User, report,
-                IncidentOperations.Update);
+                User, GetErrorReport(id),
+                IncidentOperations.Delete);
             if (!isAuthorized.Succeeded)
             {
                 return RedirectToAction("Index");

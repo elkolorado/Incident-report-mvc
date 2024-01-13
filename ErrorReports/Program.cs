@@ -30,6 +30,10 @@ builder.Services.AddSingleton<IAuthorizationHandler,
 builder.Services.AddSingleton<IAuthorizationHandler,
                       IncidentIsManagerAuthorizationHandler>();
 
+
+builder.Services.AddSingleton<IAuthorizationHandler,
+                      IncidentIsHelpDeskAuthorizationHandler>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

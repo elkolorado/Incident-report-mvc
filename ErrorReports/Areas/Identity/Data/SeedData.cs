@@ -40,7 +40,7 @@ namespace ErrorReports.Authorization
                 {
                     FirstName = FirstName,
                     LastName = LastName,
-                    UserName = UserName,
+                    Email = UserName,
                     EmailConfirmed = true
                 };
                 await userManager.CreateAsync(user, testUserPw);
@@ -100,7 +100,6 @@ namespace ErrorReports.Authorization
             context.Incidents.AddRange(
                 new ErrorReport
                 {
-                    Id = 1,
                     Title = "Błąd w aplikacji",
                     Description = "Aplikacja zawiesza się.",
                     DateReported = DateTime.Now.AddHours(-3),
